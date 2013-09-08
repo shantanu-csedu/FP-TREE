@@ -1,3 +1,9 @@
+/*
+ * Copyright (C) 2013 shantanu saha <shantanucse18@gmail.com>
+ *
+ * You can distribute, modify this project. 
+ * But you can't use it as academic project or assignment without a good amount of modification.
+ */
 package com.fp.tree.transaction;
 
 import java.io.File;
@@ -31,8 +37,10 @@ public class TransactionTable {
 	}
 	
 	public void print(){
+		System.out.println("\n=======Transaction table========\n");
 		for(int i=0;i<transactionTable.size();i++){
 			TransactionItem item = transactionTable.get(i);
+			System.out.print("T" + (i+1) + ": ");
 			item.print();
 			System.out.println("");
 		}

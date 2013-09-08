@@ -1,3 +1,9 @@
+/*
+ * Copyright (C) 2013 shantanu saha <shantanucse18@gmail.com>
+ *
+ * You can distribute, modify this project. 
+ * But you can't use it as academic project or assignment without a good amount of modification.
+ */
 package com.fp.tree.transaction;
 
 import java.util.ArrayList;
@@ -25,7 +31,6 @@ public class FrequencyTable {
 			TransactionItem item = table.getItem(i);
 			
 			for(int j=0;j<item.getCount();j++){
-//				System.out.println(item.getItem(j));
 				if(hashTable.containsKey(item.getItem(j))){ //already exits. just inc 1 count
 					hashTable.put(item.getItem(j), 1 + hashTable.get(item.getItem(j)) );
 				}
@@ -65,6 +70,7 @@ public class FrequencyTable {
 	
 	
 	public void print(){
+		System.out.println("\n========Frequncy table========\n");
 		for(int i=0;i<freqTable.size(); i++){
 			System.out.println("item: " + freqTable.get(i).getItemName() + " ----> freq: " + freqTable.get(i).getItemValue() );
 		}
