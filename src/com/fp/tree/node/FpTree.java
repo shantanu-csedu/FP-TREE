@@ -133,5 +133,6 @@ public class FpTree {
 			}
 			System.out.println("NODE END: " + item + "\n");
 		}
+		System.out.println("\n=========END========\n");
 	}
 }

@@ -14,7 +14,7 @@ import com.fp.tree.transaction.FrequencyTable;
 import com.fp.tree.transaction.TransactionTable;
 
 public class Main {
-	private final int supportCount = 2500;
+	private final int supportCount = 2700;
 	public static void main(String[] args) {
 		
 		new Main().Fptree();
