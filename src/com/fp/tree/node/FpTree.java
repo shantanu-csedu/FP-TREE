@@ -82,54 +82,102 @@ public class FpTree {
 		}
 	}
 	
+	private void conditionalTreeTraverse(FpTree root, int supportCount){
+		if(root == null ) return;
+		for(int skey : root.childs.keySet()){
+			FpTree stmp = root.childs.get(skey);
+			if(stmp.count >= supportCount){
+				
+				if(itemCount.cnt.containsKey(stmp.nodeName)){
+					int tcount = itemCount.cnt.get(stmp.nodeName) + stmp.count;
+					itemCount.cnt.put(stmp.nodeName,tcount);
+				}
+				else{
+					itemCount.name.add(stmp.nodeName);
+					itemCount.cnt.put(stmp.nodeName,stmp.count);
+				}
+					
+			}
+			conditionalTreeTraverse(stmp, supportCount);
+		}
+	}
+	
+	public class NodeVector{
+		Vector<Integer> name;
+		Hashtable<Integer,Integer> cnt;
+		public NodeVector() {
+			name = new Vector<Integer>();
+			cnt = new Hashtable<Integer,Integer> ();
+		}
+	}
+	
+	private void fpTreeTraverse(FpTree currentNode,int cnt){
+		if(currentNode == null) return ;
+		if(currentNode.parent !=null)
+			fpTreeTraverse(currentNode.parent,cnt);
+		
+		if(curSTree.childs.containsKey(currentNode.nodeName)){ // generating 2nd tree
+			FpTree fttmp = curSTree.childs.get(currentNode.nodeName);
+			fttmp.count += cnt;
+			curSTree.childs.put(currentNode.nodeName, fttmp);
+			curSTree = fttmp;
+		}
+		else{
+			FpTree stmp = new FpTree();
+			stmp.nodeName = currentNode.nodeName;
+			stmp.count = cnt;
+			curSTree.childs.put(stmp.nodeName, stmp);
+			curSTree = stmp;
+		}
+		
+//		System.out.println(currentNode.nodeName + " " + curSTree.count);
+		
+		
+	}
+	private FpTree curSTree;
+	private NodeVector itemCount;
 	public void generateConditionalPBase(FrequencyTable ftable, int supportCount){
 		List<FreqItem> freqList = ftable.getFreqTable();
 		System.out.println("\n=========Frequent Patterns========\n");
 		
 		for(int i=freqList.size()-1;i>=0;i--){ // frequency increasing order [ 2 3 6 7 ..]
 			int item = freqList.get(i).getItemName();
-			FpTree startNode = ftable.startNode.get(item); // traverse tree, start by saved node in frequency table. [2 or 5 or 4 etc] order by frequency 
-			System.out.println("NODE START: " + item);
-			Hashtable<String,Integer> freqPatterns = new Hashtable<String,Integer>();
 			
+			FpTree startNode = ftable.startNode.get(item); // traverse tree, start by saved node in frequency table. [2 or 5 or 4 etc] order by frequency
+			int itemValue = startNode.count;
+			System.out.println("NODE START: " + item);
+			// after a loop all tree complete for a single node
+			FpTree secondaryTree = new FpTree();
+			itemCount = new NodeVector();
 			while(startNode !=null){ // each node parents. 
-				FpTree currentNode = startNode.parent;
-				Vector<Integer> itemCount = new Vector<Integer>();
-				while(currentNode != null){
-					itemCount.add(currentNode.nodeName);
-					currentNode = currentNode.parent;
-				}
+				curSTree = secondaryTree;
+				
+				fpTreeTraverse(startNode.parent,itemValue);
+				startNode = startNode.brotherNode;
+				if(startNode !=null) continue;
+				// all tree traverse for 5
+				conditionalTreeTraverse(secondaryTree, supportCount);
+//				System.out.println("TREE : " + itemCount.name);
 				/*
 				 * combination
 				 */
-				ICombinatoricsVector<Integer> initialVector = Factory.createVector(itemCount );
-				for(int pSize=1;pSize<=itemCount.size();pSize++){
+				ICombinatoricsVector<Integer> initialVector = Factory.createVector(itemCount.name );
+				for(int pSize=1;pSize<=itemCount.name.size();pSize++){
 					Generator<Integer> gen = Factory.createSimpleCombinationGenerator(initialVector, pSize);
 					
 					for (ICombinatoricsVector<Integer> combination : gen) {
 						String key="";
+						long min_cnt = 9999999999999999l;
 						key += item;
 						for(int v=0;v<combination.getVector().size();v++){
 							int vItem = combination.getValue(v);
 							key+= ", " + vItem;
-							
+							min_cnt = Math.min(min_cnt, itemCount.cnt.get(vItem));
 						}
-						if(freqPatterns.containsKey(key)){
-							int fcount = freqPatterns.get(key);
-							fcount+= startNode.count;
-							freqPatterns.put(key, fcount);
-						}
-						else{
-							freqPatterns.put(key, startNode.count);
-						}
+						System.out.println("{ " + key + " : " + min_cnt+" }");
+		
 					}
-				}
-				
-				startNode = startNode.brotherNode;
-			}
-			for(String key : freqPatterns.keySet()){
-				if(freqPatterns.get(key) >= supportCount)
-					System.out.println("{ " + key + " : " + freqPatterns.get(key)+" }");
+				}	
 			}
 			System.out.println("NODE END: " + item + "\n");
 		}
