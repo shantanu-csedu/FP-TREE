@@ -9,11 +9,6 @@ package com.fp.tree.node;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Vector;
-
-import org.paukov.combinatorics.Factory;
-import org.paukov.combinatorics.Generator;
-import org.paukov.combinatorics.ICombinatoricsVector;
-
 import com.fp.tree.data.FreqItem;
 import com.fp.tree.transaction.FrequencyTable;
 import com.fp.tree.transaction.TransactionItem;
@@ -159,26 +154,13 @@ public class FpTree {
 				fpTreeTraverse(startNode.parent,itemValue);
 				startNode = startNode.brotherNode;
 				if(startNode !=null) continue;
-				// all tree traverse for 5
+				
 				conditionalTreeTraverse(secondaryTree, supportCount,"",item,9999999999999999l);
-//				System.out.println("TREE : " + itemCount.name);
 				/*
 				 * combination
 				 */
-				ICombinatoricsVector<Integer> initialVector = Factory.createVector(itemCount.name );
-				Generator<Integer> gen = Factory.createSimpleCombinationGenerator(initialVector, 1);
-					
-				for (ICombinatoricsVector<Integer> combination : gen) {
-					String key="";
-					long min_cnt = 9999999999999999l;
-					key += item;
-					for(int v=0;v<combination.getVector().size();v++){
-						int vItem = combination.getValue(v);
-						key+= ", " + vItem;
-						min_cnt = Math.min(min_cnt, itemCount.cnt.get(vItem));
-					}
-					System.out.println("{ " + key + " : " + min_cnt+" }");
-	
+				for(int iv = 0 ; iv < itemCount.name.size() ; iv++){
+					System.out.println("{ " + item + ", "+ itemCount.name.get(iv) + " : " + itemCount.cnt.get(itemCount.name.get(iv)) + " }");
 				}
 			}
 			System.out.println("NODE END: " + item + "\n");
