@@ -82,8 +82,12 @@ public class FpTree {
 		}
 	}
 	
-	private void conditionalTreeTraverse(FpTree root, int supportCount){
+	private void conditionalTreeTraverse(FpTree root, int supportCount,String str,int startItem, long count){
 		if(root == null ) return;
+		
+		if(str.trim().split(" ").length > 2 && count >= supportCount){ //
+			System.out.println("{ " + startItem + str + " : " + count + " }");
+		}
 		for(int skey : root.childs.keySet()){
 			FpTree stmp = root.childs.get(skey);
 			if(stmp.count >= supportCount){
@@ -96,9 +100,9 @@ public class FpTree {
 					itemCount.name.add(stmp.nodeName);
 					itemCount.cnt.put(stmp.nodeName,stmp.count);
 				}
-					
+				
 			}
-			conditionalTreeTraverse(stmp, supportCount);
+			conditionalTreeTraverse(stmp, supportCount, str + ", " + stmp.nodeName,startItem, Math.min(count, stmp.count));	
 		}
 	}
 	
@@ -156,28 +160,26 @@ public class FpTree {
 				startNode = startNode.brotherNode;
 				if(startNode !=null) continue;
 				// all tree traverse for 5
-				conditionalTreeTraverse(secondaryTree, supportCount);
+				conditionalTreeTraverse(secondaryTree, supportCount,"",item,9999999999999999l);
 //				System.out.println("TREE : " + itemCount.name);
 				/*
 				 * combination
 				 */
 				ICombinatoricsVector<Integer> initialVector = Factory.createVector(itemCount.name );
-				for(int pSize=1;pSize<=itemCount.name.size();pSize++){
-					Generator<Integer> gen = Factory.createSimpleCombinationGenerator(initialVector, pSize);
+				Generator<Integer> gen = Factory.createSimpleCombinationGenerator(initialVector, 1);
 					
-					for (ICombinatoricsVector<Integer> combination : gen) {
-						String key="";
-						long min_cnt = 9999999999999999l;
-						key += item;
-						for(int v=0;v<combination.getVector().size();v++){
-							int vItem = combination.getValue(v);
-							key+= ", " + vItem;
-							min_cnt = Math.min(min_cnt, itemCount.cnt.get(vItem));
-						}
-						System.out.println("{ " + key + " : " + min_cnt+" }");
-		
+				for (ICombinatoricsVector<Integer> combination : gen) {
+					String key="";
+					long min_cnt = 9999999999999999l;
+					key += item;
+					for(int v=0;v<combination.getVector().size();v++){
+						int vItem = combination.getValue(v);
+						key+= ", " + vItem;
+						min_cnt = Math.min(min_cnt, itemCount.cnt.get(vItem));
 					}
-				}	
+					System.out.println("{ " + key + " : " + min_cnt+" }");
+	
+				}
 			}
 			System.out.println("NODE END: " + item + "\n");
 		}

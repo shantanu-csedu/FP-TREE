@@ -8,6 +8,7 @@ package com.fp.tree.main;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.Date;
 
 import com.fp.tree.node.FpTree;
 import com.fp.tree.transaction.FrequencyTable;
@@ -26,6 +27,7 @@ public class Main {
 		FrequencyTable ftable;
 		FpTree tree = new FpTree();
 		try {
+			long startTime = new Date().getTime();
 			/*generate transaction table from file */
 			ttable.generateTable(new File("res/chess.dat"));
 			// generate frequency table from transaction table
@@ -38,6 +40,9 @@ public class Main {
 			tree.generateTree(ttable, ftable);
 			// calculate frequent pattern 
 			tree.generateConditionalPBase(ftable,supportCount);
+			long endTime = new Date().getTime();
+			System.out.println("Support count: " + supportCount);
+			System.out.println("Execution time(including print): " + (double) ((endTime - startTime)/1000.00) + " secs");
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
