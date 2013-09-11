@@ -120,7 +120,7 @@ public class FpTree {
 		if(currentNode.parent !=null)
 			fpTreeTraverse(currentNode.parent,cnt);
 		
-		if(curSTree.childs.containsKey(currentNode.nodeName)){ // generating 2nd tree
+		if(curSTree.childs.containsKey(currentNode.nodeName)){ // generating conditional tree
 			FpTree fttmp = curSTree.childs.get(currentNode.nodeName);
 			fttmp.count += cnt;
 			curSTree.childs.put(currentNode.nodeName, fttmp);
