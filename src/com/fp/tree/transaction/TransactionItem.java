@@ -16,8 +16,16 @@ import com.fp.tree.data.FreqItem;
 
 public class TransactionItem {
 	private List<Integer> transactionItem;
+	private int count=1;
 	
+	public void setCount(int count) {
+		this.count = count;
+	}
 	
+	public int getCount(){
+		return this.count;
+	}
+
 	public TransactionItem(){
 		transactionItem = new ArrayList<Integer>();
 	}
@@ -38,7 +46,10 @@ public class TransactionItem {
 			}
 		}
 	}
-	
+	public void addItem(int item){
+		if(!transactionItem.contains(item))
+			transactionItem.add(item);
+	}
 	public void sort(FrequencyTable ft){
 		List<FreqItem> tmp = new ArrayList<FreqItem>();
 		for(int i=0;i<transactionItem.size();i++){
@@ -65,7 +76,7 @@ public class TransactionItem {
 		}
 	}
 	
-	public int getCount(){
+	public int getSize(){
 		return transactionItem.size();
 	}
 	

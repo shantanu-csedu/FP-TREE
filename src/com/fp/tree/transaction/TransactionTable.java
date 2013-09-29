@@ -25,6 +25,10 @@ public class TransactionTable {
 	public int getSupportCount() {
 		return supportCount;
 	}
+	
+	public void addItem(TransactionItem item){
+		transactionTable.add(item);
+	}
 
 	@SuppressWarnings("resource")
 	public void generateTable(File file) throws FileNotFoundException{

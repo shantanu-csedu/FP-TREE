@@ -30,12 +30,12 @@ public class FrequencyTable {
 		for(int i=0;i<table.getCount();i++){
 			TransactionItem item = table.getItem(i);
 			
-			for(int j=0;j<item.getCount();j++){
+			for(int j=0;j<item.getSize();j++){
 				if(hashTable.containsKey(item.getItem(j))){ //already exits. just inc 1 count
-					hashTable.put(item.getItem(j), 1 + hashTable.get(item.getItem(j)) );
+					hashTable.put(item.getItem(j), item.getCount() + hashTable.get(item.getItem(j)) );
 				}
 				else{
-					hashTable.put(item.getItem(j),1);
+					hashTable.put(item.getItem(j),item.getCount());
 				}
 			}
 		}
@@ -67,7 +67,9 @@ public class FrequencyTable {
 		return freqTable;
 	}
 	
-	
+	public int getSize(){
+		return freqTable.size();
+	}
 	
 	public void print(){
 		System.out.println("\n========Frequncy table========\n");

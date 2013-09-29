@@ -24,6 +24,17 @@ public class FpTree {
 	private FpTree parent,brotherNode;
 	private int nodeName;
 	private int count;
+	private int supportCount;
+	private FrequencyTable orgFrequencyTable;
+	
+	public void setSupportCount(int supportCount) {
+		this.supportCount = supportCount;
+	}
+	
+	public void setOrgFreqTable(FrequencyTable orgFrequencyTable){
+		this.orgFrequencyTable = orgFrequencyTable;
+	}
+
 	private Hashtable<Integer, FpTree> childs;
 	
 	
@@ -34,21 +45,25 @@ public class FpTree {
 	/* 
 	 * Generate fp-tree
 	 */
-	public void generateTree(TransactionTable ttable,FrequencyTable ftable){
+	public void generateTree(TransactionTable ttable,FrequencyTable ftable,FpTree root){
 		
 		for(int i=0;i<ttable.getCount(); i++){
-			FpTree current = this; // assume this as tree root
+			FpTree current = root; // assume this as tree root
+			current.nodeName = -1;// not valid node
 			FpTree prev = null;
 			TransactionItem transaction = ttable.getItem(i); // a transaction example: 3 5 6
 			
-			for(int j=0;j<transaction.getCount();j++){
+			for(int j=0;j<transaction.getSize();j++){
 				int node = transaction.getItem(j);  // item of a transaction. example: 3 from (3 5 6)
+				if(node ==0){
+					System.out.println("");
+				}
 				FpTree tmp;
 				if( current.childs.containsKey(node) ) // if childs hash contains this node that means we don't need to create new node.
 				{
 					tmp = current.childs.get(node);
 					tmp.parent = prev;
-					tmp.count++;
+					tmp.count += transaction.getCount();
 					current.childs.put(node, tmp);
 					prev = current ;
 					current = tmp;
@@ -56,7 +71,7 @@ public class FpTree {
 				else{
 					tmp = new FpTree();
 					tmp.nodeName = node;
-					tmp.count = 1;
+					tmp.count = transaction.getCount();
 					tmp.parent = current;
 					current.childs.put(node, tmp);
 					
@@ -77,30 +92,6 @@ public class FpTree {
 		}
 	}
 	
-	private void conditionalTreeTraverse(FpTree root, int supportCount,String str,int startItem, long count){
-		if(root == null ) return;
-		
-		if(str.trim().split(" ").length > 2 && count >= supportCount){ //
-			System.out.println("{ " + startItem + str + " : " + count + " }");
-		}
-		for(int skey : root.childs.keySet()){
-			FpTree stmp = root.childs.get(skey);
-			if(stmp.count >= supportCount){
-				
-				if(itemCount.cnt.containsKey(stmp.nodeName)){
-					int tcount = itemCount.cnt.get(stmp.nodeName) + stmp.count;
-					itemCount.cnt.put(stmp.nodeName,tcount);
-				}
-				else{
-					itemCount.name.add(stmp.nodeName);
-					itemCount.cnt.put(stmp.nodeName,stmp.count);
-				}
-				
-			}
-			conditionalTreeTraverse(stmp, supportCount, str + ", " + stmp.nodeName,startItem, Math.min(count, stmp.count));	
-		}
-	}
-	
 	public class NodeVector{
 		Vector<Integer> name;
 		Hashtable<Integer,Integer> cnt;
@@ -110,61 +101,54 @@ public class FpTree {
 		}
 	}
 	
-	private void fpTreeTraverse(FpTree currentNode,int cnt){
-		if(currentNode == null) return ;
-		if(currentNode.parent !=null)
-			fpTreeTraverse(currentNode.parent,cnt);
-		
-		if(curSTree.childs.containsKey(currentNode.nodeName)){ // generating conditional tree
-			FpTree fttmp = curSTree.childs.get(currentNode.nodeName);
-			fttmp.count += cnt;
-			curSTree.childs.put(currentNode.nodeName, fttmp);
-			curSTree = fttmp;
-		}
-		else{
-			FpTree stmp = new FpTree();
-			stmp.nodeName = currentNode.nodeName;
-			stmp.count = cnt;
-			curSTree.childs.put(stmp.nodeName, stmp);
-			curSTree = stmp;
-		}
-		
-//		System.out.println(currentNode.nodeName + " " + curSTree.count);
-		
-		
+	
+	private void generateTIFromFpTree(FpTree startNode,TransactionItem tItem){
+		if(startNode == null) return ;
+		if(startNode.parent !=null)
+			generateTIFromFpTree(startNode.parent,tItem);
+		if(startNode.nodeName != -1)
+			tItem.addItem(startNode.nodeName);
 	}
-	private FpTree curSTree;
-	private NodeVector itemCount;
-	public void generateConditionalPBase(FrequencyTable ftable, int supportCount){
+	
+	public void findFreqItems(FrequencyTable ftable,FpTree root,int level,String str){ //
 		List<FreqItem> freqList = ftable.getFreqTable();
-		System.out.println("\n=========Frequent Patterns========\n");
+		if(level == 1 ) System.out.println("\n=========Frequent Patterns========\n");
 		
 		for(int i=freqList.size()-1;i>=0;i--){ // frequency increasing order [ 2 3 6 7 ..]
 			int item = freqList.get(i).getItemName();
-			
 			FpTree startNode = ftable.startNode.get(item); // traverse tree, start by saved node in frequency table. [2 or 5 or 4 etc] order by frequency
 			int itemValue = startNode.count;
-			System.out.println("NODE START: " + item);
-			// after a loop all tree complete for a single node
-			FpTree secondaryTree = new FpTree();
-			itemCount = new NodeVector();
-			while(startNode !=null){ // each node parents. 
-				curSTree = secondaryTree;
-				
-				fpTreeTraverse(startNode.parent,itemValue);
+			TransactionTable tt = new TransactionTable(supportCount);
+			
+			while(startNode != null){
+				TransactionItem tItem = new TransactionItem();
+				generateTIFromFpTree(startNode.parent, tItem);
+				tItem.setCount(itemValue);
+				if(tItem.getSize() > 0)
+					tt.addItem(tItem);
 				startNode = startNode.brotherNode;
-				if(startNode !=null) continue;
-				
-				conditionalTreeTraverse(secondaryTree, supportCount,"",item,9999999999999999l);
-				/*
-				 * combination
-				 */
-				for(int iv = 0 ; iv < itemCount.name.size() ; iv++){
-					System.out.println("{ " + item + ", "+ itemCount.name.get(iv) + " : " + itemCount.cnt.get(itemCount.name.get(iv)) + " }");
+			}
+			if(tt.getCount() == 0 && level > 1){
+			//	System.out.println("1{" + str + " " + ftable.startNode.get(item).nodeName + ": " + itemValue + " }");
+				continue;
+			}
+			FrequencyTable ft = new FrequencyTable(tt);
+			if(level == 1){
+				for(int fi=0;fi<ft.getSize();fi++){
+					System.out.println("{ " + ftable.startNode.get(item).nodeName + " "+ ft.getFreqTable().get(fi).getItemName() + " : "+ ft.getFreqTable().get(fi).getItemValue() +" }");
 				}
 			}
-			System.out.println("NODE END: " + item + "\n");
+			if(ft.getSize() > 1){
+				tt.sort(orgFrequencyTable);
+				FpTree ftree = new FpTree();
+				generateTree(tt, ft, ftree);
+				//System.out.print(ftable.startNode.get(item).nodeName + " ");
+				findFreqItems(ft, ftree, level+1,str + " " + ftable.startNode.get(item).nodeName);
+			}
+			else if(ft.getSize() == 1 && level>1){
+				System.out.println("{" + str + " " + ftable.startNode.get(item).nodeName+ " "+ ft.getFreqTable().get(0).getItemName() + " : "+ ft.getFreqTable().get(0).getItemValue() +" }");
+			}
 		}
-		System.out.println("\n=========END========\n");
 	}
+	
 }
